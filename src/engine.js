@@ -154,7 +154,7 @@ export function createCombat(encounter, random=rollDie) {
     finished=true;active=false;log("encounter_end",null,{round,participants:participants.map(p=>({id:p.instanceId,hp:p.state.hitPoints}))});
   }
   function state(){return {encounter,participants,events,round,turnIndex,active,finished,current:current()?.instanceId||null};}
-  function exportJSON(){return JSON.stringify({schemaVersion:encounter.schemaVersion,encounterId:encounter.encounterId,name:encounter.name,status:finished?"finished":active?"active":"prepared",round,turnIndex,participants,events},null,2);}
+  function exportJSON(){return JSON.stringify({schemaVersion:encounter.schemaVersion,encounterId:encounter.encounterId,name:encounter.name,status:finished?"finished":active?"active":"prepared",encounter,round,turnIndex,participants,events},null,2);}
   function exportText(){
     const lines=[`ENCUENTRO: ${encounter.name}`,`Estado: ${finished?"Finalizado":active?"En curso":"Preparado"} | Ronda: ${round}`,"","PARTICIPANTES",...participants.map(p=>`- ${p.profile.name}: ${p.state.hitPoints}/${p.profile.hitPointsMax} PG (CA ${p.profile.armorClass})`),"","REGISTRO"];
     for(const e of events) lines.push(`[${e.sequence}] R${e.round} ${e.type} ${e.actorId||""} ${JSON.stringify(e.details)}`);
