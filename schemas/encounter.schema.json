@@ -1,0 +1,748 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leandropappa.github.io/Cuervo-Encounter-Engine-/schemas/encounter.schema.json",
+  "title": "Cuervo Encounter Engine encounter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "encounterId",
+    "name",
+    "ruleset",
+    "participants"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "encounterId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[a-zA-Z0-9._-]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "ruleset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "system",
+        "edition",
+        "campaignProfile"
+      ],
+      "properties": {
+        "system": {
+          "const": "dnd5e"
+        },
+        "edition": {
+          "const": "2014"
+        },
+        "campaignProfile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "diagonalRule": {
+          "enum": [
+            "five_feet",
+            "alternating_5_10",
+            "euclidean",
+            "custom"
+          ]
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "createdBy": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "participants": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/participant"
+      }
+    },
+    "map": {
+      "$ref": "#/$defs/map"
+    },
+    "initiative": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "enum": [
+            "roll",
+            "manual",
+            "mixed"
+          ]
+        },
+        "order": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tiePolicy": {
+          "enum": [
+            "dm_decides",
+            "player_decides",
+            "manual_order"
+          ]
+        }
+      }
+    },
+    "objectives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "id",
+          "description"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "victory",
+              "defeat",
+              "optional",
+              "narrative"
+            ]
+          }
+        }
+      }
+    },
+    "automation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "defaultAllyProfile": {
+          "type": "string"
+        },
+        "defaultEnemyProfile": {
+          "type": "string"
+        },
+        "pauseForManualRules": {
+          "type": "boolean"
+        }
+      }
+    },
+    "houseRules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "description"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "implementation": {
+            "enum": [
+              "engine",
+              "manual",
+              "pending"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "abilityScore": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30
+    },
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max",
+        "current"
+      ],
+      "properties": {
+        "max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "current": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recharge": {
+          "enum": [
+            "short_rest",
+            "long_rest",
+            "dawn",
+            "encounter",
+            "never",
+            "custom"
+          ]
+        }
+      }
+    },
+    "attack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "attackBonus",
+        "damage",
+        "damageType",
+        "range"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "attackBonus": {
+          "type": "integer"
+        },
+        "attackType": {
+          "enum": [
+            "melee_weapon",
+            "ranged_weapon",
+            "melee_spell",
+            "ranged_spell",
+            "other"
+          ]
+        },
+        "range": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "normalFeet"
+          ],
+          "properties": {
+            "normalFeet": {
+              "type": "number",
+              "minimum": 0
+            },
+            "longFeet": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "damage": {
+          "type": "string",
+          "pattern": "^[0-9dD+\\\\- ]{1,40}$"
+        },
+        "damageType": {
+          "type": "string"
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "implementation": {
+          "enum": [
+            "engine",
+            "manual"
+          ]
+        }
+      }
+    },
+    "capacity": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "implementation"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "action",
+            "bonusAction",
+            "reaction",
+            "trait",
+            "spell",
+            "other"
+          ]
+        },
+        "implementation": {
+          "enum": [
+            "engine",
+            "manual"
+          ]
+        },
+        "trigger": {
+          "type": [
+            "object",
+            "string",
+            "null"
+          ]
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "uses": {
+          "$ref": "#/$defs/resource"
+        },
+        "effect": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "sourceNote": {
+          "type": "string"
+        }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profileId",
+        "name",
+        "size",
+        "hitPointsMax",
+        "armorClass",
+        "speedFeet"
+      ],
+      "properties": {
+        "profileId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "size": {
+          "enum": [
+            "tiny",
+            "small",
+            "medium",
+            "large",
+            "huge",
+            "gargantuan"
+          ]
+        },
+        "creatureType": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "abilityScores": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "strength": {
+              "$ref": "#/$defs/abilityScore"
+            },
+            "dexterity": {
+              "$ref": "#/$defs/abilityScore"
+            },
+            "constitution": {
+              "$ref": "#/$defs/abilityScore"
+            },
+            "intelligence": {
+              "$ref": "#/$defs/abilityScore"
+            },
+            "wisdom": {
+              "$ref": "#/$defs/abilityScore"
+            },
+            "charisma": {
+              "$ref": "#/$defs/abilityScore"
+            }
+          }
+        },
+        "proficiencyBonus": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "armorClass": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hitPointsMax": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hitDice": {
+          "type": "string"
+        },
+        "initiativeBonus": {
+          "type": "integer"
+        },
+        "speedFeet": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "walk"
+          ],
+          "properties": {
+            "walk": {
+              "type": "number",
+              "minimum": 0
+            },
+            "burrow": {
+              "type": "number",
+              "minimum": 0
+            },
+            "climb": {
+              "type": "number",
+              "minimum": 0
+            },
+            "fly": {
+              "type": "number",
+              "minimum": 0
+            },
+            "swim": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "savingThrows": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "bonus"
+            ],
+            "properties": {
+              "bonus": {
+                "type": "integer"
+              },
+              "proficient": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "skills": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "bonus"
+            ],
+            "properties": {
+              "bonus": {
+                "type": "integer"
+              },
+              "proficient": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "passivePerception": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "senses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attacks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/attack"
+          }
+        },
+        "capacities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/capacity"
+          }
+        },
+        "resources": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/resource"
+          }
+        },
+        "resistances": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vulnerabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "immunities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "enum": [
+                "campaign_sheet",
+                "dm_created",
+                "official_reference",
+                "temporary"
+              ]
+            },
+            "reference": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "participant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instanceId",
+        "side",
+        "controller",
+        "state"
+      ],
+      "properties": {
+        "instanceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "side": {
+          "enum": [
+            "player",
+            "ally",
+            "enemy"
+          ]
+        },
+        "controller": {
+          "enum": [
+            "player",
+            "ai",
+            "dm"
+          ]
+        },
+        "profile": {
+          "$ref": "#/$defs/profile"
+        },
+        "profileRef": {
+          "type": "string"
+        },
+        "initiative": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "total": {
+              "type": "integer"
+            },
+            "tieBreakOrder": {
+              "type": "integer"
+            }
+          }
+        },
+        "state": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "hitPoints"
+          ],
+          "properties": {
+            "hitPoints": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "resources": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "conditions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "effects": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "concentration": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "position": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "x",
+                "y"
+              ],
+              "properties": {
+                "x": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "y": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "activity": {
+              "enum": [
+                "active",
+                "incapacitated",
+                "unconscious",
+                "dead",
+                "withdrawn",
+                "off_scene"
+              ]
+            }
+          }
+        },
+        "tactics": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "archetype": {
+              "type": "string"
+            },
+            "priorities": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "protects": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "retreatAtHpPercent": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "manualFallback": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "map": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "width",
+        "height",
+        "cellSizeFeet"
+      ],
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200
+        },
+        "cellSizeFeet": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "diagonalRule": {
+          "enum": [
+            "five_feet",
+            "alternating_5_10",
+            "euclidean",
+            "custom"
+          ]
+        },
+        "terrain": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "obstacles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    }
+  }
+}
