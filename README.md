@@ -1,60 +1,47 @@
 # Cuervo Encounter Engine
 
-Motor táctico de combate para **Las Cenizas de la Marea**. Su objetivo es ejecutar y registrar encuentros de forma consistente, sin quitarle al jugador el control de Cuervo.
+Motor táctico de combate para **Las Cenizas de la Marea**. Su objetivo es resolver y registrar encuentros de forma consistente, sin quitarle al jugador el control de Cuervo.
 
-## Marco de reglas de la campaña
+## Diseño aprobado para la reconstrucción
 
-- Base: **D&D 5.ª edición, compatible con el marco básico de 2014**.
-- Adaptación: se utilizan las reglas simplificadas y los bloques de PNJ establecidos para *Las Cenizas de la Marea*. No se busca reproducir íntegramente todos los subsistemas del reglamento oficial.
-- Prioridad: respetar las reglas y fichas mecánicas vigentes en el repositorio privado de campaña. Las decisiones narrativas del DM no deben contradecir resultados mecánicos ya establecidos.
-- Cuervo: todas sus decisiones y acciones quedan bajo control del jugador.
-- Aliados y enemigos: el motor puede resolver sus turnos automáticamente según sus fichas, capacidades y comportamiento configurado.
-- Transparencia: cada resolución debe registrar dados, modificadores, dificultad o CA, regla aplicada y resultado. Una mecánica todavía no implementada debe identificarse como pendiente o manual; nunca presentarse como si el motor la hubiera resuelto.
+La especificación funcional es el documento rector para el rediseño:
 
-## Arquitectura prevista
+- [Leer la especificación funcional](docs/ESPECIFICACION_FUNCIONAL.md)
 
-El desarrollo se organizará en componentes separados para evitar reglas rígidas o parches aislados:
+### Principios centrales
 
-1. **Motor de reglas:** acciones, economía de turnos, ataques, daño, salvaciones, condiciones, movimiento, alcance, cobertura, línea de visión y efectos temporales.
-2. **Contenido:** fichas de personajes, PNJ, enemigos, objetos, equipo, rasgos y conjuros que realmente formen parte de la campaña.
-3. **Encuentros:** configuración importable generada desde el chat, con participantes, equipo, escenario, posiciones y condiciones iniciales.
-4. **Mapa táctico:** cuadrícula de 5 pies, obstáculos, terreno, movimiento y relaciones espaciales. La generación aleatoria deberá respetar las condiciones y la transitabilidad del escenario.
-5. **Registro y exportación:** historial verificable de turnos, tiradas, posiciones, daños, estados y efectos, listo para compartir en el chat de campaña.
+- Base: **D&D 5.ª edición, compatible con el marco básico de 2014**, adaptado a las reglas simplificadas y las fichas oficiales de la campaña.
+- Cuervo queda bajo control exclusivo del jugador.
+- Aliados y enemigos resuelven sus turnos automáticamente, usando solo las capacidades documentadas.
+- Cada tirada, modificador, regla aplicada y consecuencia debe quedar registrada.
+- El azar debe usar Web Crypto con muestreo sin sesgo; no se alteran ni repiten resultados.
+- El mapa debe ser una herramienta mecánica: movimiento, distancias, obstáculos, línea de visión, alcance y cobertura.
+- El resumen final debe poder pegarse en el chat de campaña y también exportarse como JSON estructurado.
+- Toda regla no implementada se identifica como pendiente o manual.
 
-La arquitectura debe permitir incorporar nuevas capacidades sin tener que implementar todo D&D de una vez. Se priorizan las reglas que utiliza la campaña y se agregan reglas avanzadas cuando sean necesarias.
+## Reconstrucción desde cero
 
-## Estado actual — prototipo v0.1
+El prototipo actual se conserva en el historial de GitHub como referencia y respaldo. **No es la base que se seguirá ampliando.** La nueva implementación se desarrollará por módulos, con pruebas independientes del navegador y criterios de aceptación definidos en la especificación.
 
-- Carga manual de personaje jugador, aliados y enemigos.
-- Mapa táctico 12×8; edición de obstáculos y colocación inicial de participantes.
-- Movimiento de Cuervo limitado por su velocidad configurable (por defecto 25 pies), con rutas bloqueadas por obstáculos y ocupantes.
-- Línea de visión: los obstáculos bloquean ataques que requieren visión.
-- Acción Esquivar: aplica desventaja a los ataques contra el personaje hasta el comienzo de su siguiente turno; la ventaja en salvaciones de Destreza queda registrada para adjudicación manual.
-- Iniciativa y orden de turnos.
-- Decisiones manuales para el personaje jugador.
-- Resolución automática básica de ataques para aliados y enemigos.
-- Seguimiento de PV, CA y estado de participantes.
-- Registro detallado, cierre del encuentro y exportación del resumen en texto.
+La reconstrucción no implica borrar el repositorio ni su historial. Tampoco se copiarán al repositorio público las fichas completas ni información privada de la campaña. Los datos de personajes y encuentros se cargarán mediante configuraciones validadas.
 
-## Hoja de ruta
+## Etapas previstas
 
-1. Mapa cuadriculado, posiciones, movimiento, obstáculos, alcance y línea de visión.
-2. Acciones, acción adicional, reacción, ataques, críticos, daño y salvaciones.
-3. Condiciones, cobertura, ocultamiento y efectos temporales.
-4. Rasgos de clase y capacidades particulares de las fichas de campaña.
-5. Equipo, objetos, conjuros y efectos especiales presentes en la campaña.
-6. Importación de encuentros mediante un bloque de configuración generado por Nox.
-7. Pruebas de reglas y escenarios para verificar que cada mecánica se aplique y se registre correctamente.
+1. Diseño de datos y formato de encuentro.
+2. Núcleo: participantes, iniciativa, turnos, acciones, ataques, daño y azar criptográfico.
+3. Acciones, salvaciones, condiciones, reacciones y recursos prioritarios.
+4. Automatización táctica de aliados y enemigos.
+5. Mapa táctico completo.
+6. Importación desde el chat y fichas de campaña.
+7. Registro, resumen, JSON, reimportación y pruebas de continuidad.
+8. Interfaz, accesibilidad y pruebas prácticas.
 
-## Uso
+No se dará por terminada una etapa hasta superar sus pruebas de aceptación.
 
-Abrí `index.html` en un navegador moderno. Para publicar con GitHub Pages, habilitá Pages desde **Settings → Pages** y seleccioná **GitHub Actions** como fuente de publicación.
+## Uso y publicación
+
+La aplicación publicada corresponde al prototipo anterior hasta que la reconstrucción esté lista. Para publicar con GitHub Pages, configurá **Settings → Pages → GitHub Actions**.
 
 ## Datos y privacidad
 
-Los encuentros se mantienen en memoria durante la sesión. Esta versión no envía fichas ni registros a un servidor. No incluyas información privada de campaña en este repositorio público.
-
-## Límites de la versión preliminar
-
-La automatización actual usa ataques básicos configurables. El mapa es una primera implementación espacial: todavía no calcula alcance de armas, cobertura parcial, terreno difícil ni ataques de oportunidad. Esconderse, salvaciones, condiciones avanzadas, importación de encuentros y rasgos particulares todavía requieren adjudicación manual. Las acciones especiales que no tengan resolución mecánica disponible requieren adjudicación manual y deben quedar identificadas como tales.
-
+Los encuentros se mantienen localmente durante la sesión y se exportan a petición del usuario. No se deben enviar fichas ni registros a servicios externos ni incluir información privada de campaña en este repositorio público.
