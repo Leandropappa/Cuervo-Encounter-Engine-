@@ -29,13 +29,13 @@ button{background:#33263a;border:1px solid #705875;color:var(--text);padding:10p
 <main>
 <section class="panel" id="setup">
 <h2>I. Preparar el encuentro</h2>
-<p class="sub">Cargá participantes y sus estadísticas. Los datos se guardan en este navegador.</p>
+<p class="sub">Cargá participantes y sus estadísticas. Los datos permanecen en memoria durante esta sesión.</p>
 <div class="grid">
 <label class="field">Nombre del encuentro<input id="encName" value="Encuentro sin nombre" maxlength="70"></label>
 <label class="field">Nombre del personaje jugador<input id="heroName" value="Cuervo" maxlength="40"></label>
 </div>
 <div class="actions"><button id="addHero">＋ Agregar personaje jugador</button><button id="addAlly">＋ Agregar aliado</button><button id="addEnemy">＋ Agregar enemigo</button><button id="start" class="primary">Iniciar encuentro</button></div>
-<p class="notice">Cada participante necesita PV, CA, iniciativa, bonificador de ataque y daño. Para daño podés usar, por ejemplo, 1d6+2. La automatización es básica y configurable; revisá siempre las acciones propuestas por el motor.</p>
+<p class="notice">Marco de campaña: D&amp;D 5.ª edición, compatible con el marco básico de 2014 y adaptado a las reglas simplificadas de Las Cenizas de la Marea. Cuervo conserva el control de sus decisiones; aliados y enemigos usan automatización básica. Esta versión preliminar todavía no implementa todas las reglas.</p><p class="notice">Cada participante necesita PV, CA, iniciativa, bonificador de ataque y daño. Para daño podés usar, por ejemplo, 1d6+2. Las reglas especiales se incorporarán progresivamente como módulos verificables, sin reemplazar las decisiones del jugador.</p>
 </section>
 <section class="panel">
 <h2>II. Participantes</h2><div id="participants" class="participants"><p class="notice">Todavía no hay participantes. Agregalos arriba.</p></div>
@@ -51,7 +51,7 @@ button{background:#33263a;border:1px solid #705875;color:var(--text);padding:10p
 <label class="field">Daño (si ataca)<input id="heroDamage" value="1d6+3"></label>
 </div>
 <label class="field" style="margin-top:10px">Detalle opcional de la acción<input id="heroNote" placeholder="Ej. Ataque furtivo, uso de poción, maniobra..."></label>
-<p class="notice">El motor calcula el ataque básico contra la CA y el daño indicado. Las acciones especiales se anotan, pero sus reglas se resuelven manualmente.</p>
+<p class="notice">El motor calcula el ataque básico contra la CA y el daño indicado. En esta versión, las acciones especiales se registran para resolución manual; las próximas versiones incorporarán sus efectos mecánicos.</p>
 <button id="doHero" class="primary">Confirmar acción de Cuervo</button>
 </div>
 </section>
