@@ -1,0 +1,196 @@
+{
+  "schemaVersion": "1.0.0",
+  "encounterId": "demo-puente-001",
+  "name": "Encuentro ilustrativo — Puente de piedra",
+  "ruleset": {
+    "system": "dnd5e",
+    "edition": "2014",
+    "campaignProfile": "campaña-5e-2014-adaptada",
+    "diagonalRule": "five_feet",
+    "notes": [
+      "Ejemplo didáctico; no representa un encuentro real de Las Cenizas de la Marea."
+    ]
+  },
+  "metadata": {
+    "createdBy": "Nox",
+    "notes": "Todas las estadísticas de este archivo son ficticias y sirven únicamente para probar la importación."
+  },
+  "participants": [
+    {
+      "instanceId": "aventurero-demo",
+      "side": "player",
+      "controller": "player",
+      "profile": {
+        "profileId": "demo-aventurero",
+        "name": "Aventurero de prueba",
+        "size": "medium",
+        "creatureType": "humanoide",
+        "abilityScores": {
+          "strength": 12,
+          "dexterity": 14,
+          "constitution": 12,
+          "intelligence": 10,
+          "wisdom": 12,
+          "charisma": 10
+        },
+        "proficiencyBonus": 2,
+        "armorClass": 14,
+        "hitPointsMax": 12,
+        "initiativeBonus": 2,
+        "speedFeet": {
+          "walk": 30
+        },
+        "savingThrows": {
+          "dexterity": {
+            "bonus": 4,
+            "proficient": true
+          }
+        },
+        "skills": {
+          "stealth": {
+            "bonus": 4,
+            "proficient": true
+          }
+        },
+        "passivePerception": 11,
+        "attacks": [
+          {
+            "id": "espada-corta",
+            "name": "Espada corta",
+            "attackBonus": 4,
+            "attackType": "melee_weapon",
+            "range": {
+              "normalFeet": 5
+            },
+            "damage": "1d6+2",
+            "damageType": "piercing",
+            "implementation": "engine"
+          }
+        ],
+        "capacities": [],
+        "source": {
+          "kind": "temporary",
+          "reference": "Datos ficticios de demostración"
+        }
+      },
+      "state": {
+        "hitPoints": 12,
+        "resources": {},
+        "conditions": [],
+        "effects": [],
+        "concentration": null,
+        "position": {
+          "x": 2,
+          "y": 3
+        },
+        "activity": "active"
+      }
+    },
+    {
+      "instanceId": "guardia-demo",
+      "side": "enemy",
+      "controller": "ai",
+      "profile": {
+        "profileId": "demo-guardia",
+        "name": "Guardia de prueba",
+        "size": "medium",
+        "creatureType": "humanoide",
+        "abilityScores": {
+          "strength": 13,
+          "dexterity": 12,
+          "constitution": 12,
+          "intelligence": 10,
+          "wisdom": 10,
+          "charisma": 10
+        },
+        "proficiencyBonus": 2,
+        "armorClass": 13,
+        "hitPointsMax": 9,
+        "initiativeBonus": 1,
+        "speedFeet": {
+          "walk": 30
+        },
+        "attacks": [
+          {
+            "id": "lanza",
+            "name": "Lanza",
+            "attackBonus": 3,
+            "attackType": "melee_weapon",
+            "range": {
+              "normalFeet": 5
+            },
+            "damage": "1d6+1",
+            "damageType": "piercing",
+            "implementation": "engine"
+          }
+        ],
+        "capacities": [],
+        "source": {
+          "kind": "temporary",
+          "reference": "Datos ficticios de demostración"
+        }
+      },
+      "state": {
+        "hitPoints": 9,
+        "resources": {},
+        "conditions": [],
+        "effects": [],
+        "concentration": null,
+        "position": {
+          "x": 5,
+          "y": 3
+        },
+        "activity": "active"
+      },
+      "tactics": {
+        "archetype": "agresivo",
+        "priorities": [
+          "amenaza_mas_cercana"
+        ],
+        "manualFallback": true
+      }
+    }
+  ],
+  "map": {
+    "width": 10,
+    "height": 7,
+    "cellSizeFeet": 5,
+    "diagonalRule": "five_feet",
+    "terrain": [],
+    "obstacles": [
+      {
+        "id": "muro-demo",
+        "cells": [
+          {
+            "x": 4,
+            "y": 2
+          },
+          {
+            "x": 4,
+            "y": 3
+          }
+        ],
+        "blocksMovement": true,
+        "blocksSight": true,
+        "cover": null
+      }
+    ]
+  },
+  "initiative": {
+    "method": "roll",
+    "tiePolicy": "dm_decides"
+  },
+  "objectives": [
+    {
+      "id": "derrotar-guardia",
+      "description": "Derrotar al guardia de prueba.",
+      "type": "victory"
+    }
+  ],
+  "automation": {
+    "defaultAllyProfile": "defensive",
+    "defaultEnemyProfile": "aggressive",
+    "pauseForManualRules": true
+  },
+  "houseRules": []
+}
