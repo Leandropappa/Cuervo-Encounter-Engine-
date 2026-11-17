@@ -26,6 +26,10 @@ La arquitectura debe permitir incorporar nuevas capacidades sin tener que implem
 ## Estado actual — prototipo v0.1
 
 - Carga manual de personaje jugador, aliados y enemigos.
+- Mapa táctico 12×8; edición de obstáculos y colocación inicial de participantes.
+- Movimiento de Cuervo limitado por su velocidad configurable (por defecto 25 pies), con rutas bloqueadas por obstáculos y ocupantes.
+- Línea de visión: los obstáculos bloquean ataques que requieren visión.
+- Acción Esquivar: aplica desventaja a los ataques contra el personaje hasta el comienzo de su siguiente turno; la ventaja en salvaciones de Destreza queda registrada para adjudicación manual.
 - Iniciativa y orden de turnos.
 - Decisiones manuales para el personaje jugador.
 - Resolución automática básica de ataques para aliados y enemigos.
@@ -52,5 +56,5 @@ Los encuentros se mantienen en memoria durante la sesión. Esta versión no env�
 
 ## Límites de la versión preliminar
 
-La automatización actual usa ataques básicos configurables. El mapa táctico, la importación de encuentros y las reglas especiales todavía no están implementados. Las acciones especiales que no tengan resolución mecánica disponible requieren adjudicación manual y deben quedar identificadas como tales.
+La automatización actual usa ataques básicos configurables. El mapa es una primera implementación espacial: todavía no calcula alcance de armas, cobertura parcial, terreno difícil ni ataques de oportunidad. Esconderse, salvaciones, condiciones avanzadas, importación de encuentros y rasgos particulares todavía requieren adjudicación manual. Las acciones especiales que no tengan resolución mecánica disponible requieren adjudicación manual y deben quedar identificadas como tales.
 
