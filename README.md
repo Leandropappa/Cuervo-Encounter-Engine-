@@ -11,7 +11,7 @@ Motor ligero para administrar encuentros de combate de **Las Cenizas de la Marea
 - Registro detallado, cierre del encuentro y exportación del resumen en texto.
 
 ## Uso
-Abrí `index.html` en un navegador moderno. Para publicar con GitHub Pages, habilitá Pages desde **Settings → Pages** y seleccioná **Deploy from a branch → main → /(root)**.
+Abrí `index.html` en un navegador moderno. Para publicar con GitHub Pages, habilitá Pages desde **Settings → Pages** y seleccioná **GitHub Actions** como fuente de publicación.
 
 ## Datos y privacidad
 Los encuentros se mantienen en memoria durante la sesión. Esta versión no envía fichas ni registros a un servidor. No incluyas información privada de campaña en este repositorio público.
