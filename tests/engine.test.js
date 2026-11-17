@@ -53,9 +53,18 @@ test("un ataque natural 1 falla automáticamente y queda auditado", () => {
   const actor = combat.current();
   const target = combat.participants.find(p => p.side === "enemy");
   const before = target.state.hitPoints;
+  target.state.position = {x:3,y:3};
   const result = combat.attack(actor.instanceId, target.instanceId, actor.profile.attacks[0].id);
   assert.equal(result.hit, false);
   assert.equal(result.natural, 1);
   assert.equal(target.state.hitPoints, before);
   assert.ok(combat.events.some(e => e.type === "attack_roll" && e.details.natural === 1));
+});
+
+test("el motor impide ataques cuerpo a cuerpo fuera de alcance", () => {
+  const combat = createCombat(example, () => 10);
+  combat.initiative();
+  const actor = combat.current();
+  const target = combat.participants.find(p => p.side === "enemy");
+  assert.throws(() => combat.attack(actor.instanceId, target.instanceId, actor.profile.attacks[0].id), /fuera del alcance/);
 });
