@@ -20,7 +20,9 @@ button{background:#33263a;border:1px solid #705875;color:var(--text);padding:10p
 .participants{display:grid;gap:8px}.person{display:grid;grid-template-columns:minmax(100px,1.5fr) repeat(4,minmax(55px,.65fr)) auto;gap:8px;align-items:center;padding:10px;background:#100d14a8;border:1px solid #3b3042;border-radius:8px}.person.current{border-color:var(--gold);box-shadow:inset 3px 0 var(--gold)}.person small{display:block;color:var(--muted);font:10px Arial,sans-serif}.person strong{font-size:14px}.hpbar{height:5px;background:#3b303c;border-radius:5px;overflow:hidden;margin-top:4px}.hpbar span{display:block;height:100%;background:var(--green)}.tag{font:10px Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;color:var(--gold)}
 .turnbox{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.activeName{font-size:24px;color:#f1d9a6}.log{max-height:250px;overflow:auto;display:grid;gap:7px}.entry{border-left:2px solid var(--purple);padding:5px 9px;background:#100d1480;font:13px/1.4 Arial,sans-serif}.entry time{color:var(--gold);font-size:10px;margin-right:8px}
 #exportText{width:100%;min-height:210px;background:#100d14;border:1px solid var(--line);border-radius:8px;color:#e9e0eb;padding:12px;font:12px/1.5 ui-monospace,monospace}
-.hidden{display:none!important}.notice{color:var(--muted);font:12px Arial,sans-serif}.pill{display:inline-block;border:1px solid var(--line);border-radius:20px;padding:3px 8px;color:var(--muted);font:10px Arial,sans-serif}
+.hidden{display:none!important}
+.map-wrap{display:grid;gap:10px}.map-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:end}.map-grid{display:grid;grid-template-columns:repeat(12,minmax(24px,1fr));gap:3px;max-width:760px}.cell{aspect-ratio:1;border:1px solid #51445a;border-radius:4px;background:#17131c;position:relative;padding:0;min-width:0;display:grid;place-items:center;font:11px Arial,sans-serif}.cell.blocked{background:repeating-linear-gradient(135deg,#49343a,#49343a 5px,#30242b 5px,#30242b 10px);border-color:#a45b60}.cell.selected{outline:2px solid var(--gold);outline-offset:1px}.cell.reachable{border-color:#7b9a80;background:#25352c}.cell span{font-size:10px;font-weight:bold}.map-legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font:11px Arial,sans-serif}.map-status{color:var(--muted);font:12px Arial,sans-serif}
+.notice{color:var(--muted);font:12px Arial,sans-serif}.pill{display:inline-block;border:1px solid var(--line);border-radius:20px;padding:3px 8px;color:var(--muted);font:10px Arial,sans-serif}
 @media(max-width:650px){.person{grid-template-columns:1fr 1fr 1fr;gap:6px}.person .pname{grid-column:1/-1}.person .remove{grid-column:3}.turnbox{align-items:flex-start}.mark{font-size:24px}}
 </style>
 </head>
@@ -41,6 +43,22 @@ button{background:#33263a;border:1px solid #705875;color:var(--text);padding:10p
 <h2>II. Participantes</h2><div id="participants" class="participants"><p class="notice">Todavía no hay participantes. Agregalos arriba.</p></div>
 </section>
 <section class="panel hidden" id="battle">
+<section class="panel" id="mapPanel">
+<h2>Mapa táctico · cuadrícula de 5 pies</h2>
+<p class="sub">Cada casilla representa 5 pies. En preparación podés ubicar participantes y marcar obstáculos; durante el combate podés seleccionar a Cuervo y elegir un destino válido.</p>
+<div class="map-wrap">
+<div class="map-tools">
+<label class="field">Modo del mapa<select id="mapMode"><option value="place">Ubicar participantes</option><option value="obstacle">Editar obstáculos</option><option value="move">Mover Cuervo</option></select></label>
+<label class="field">Participante<select id="mapActor"></select></label>
+<label class="field">Movimiento de Cuervo (pies)<input id="heroSpeed" type="number" min="5" max="100" step="5" value="25"></label>
+<button id="clearObstacles">Limpiar obstáculos</button>
+</div>
+<div id="mapGrid" class="map-grid" aria-label="Mapa táctico"></div>
+<div class="map-legend"><span>● Cuervo</span><span>◆ Aliado</span><span>▲ Enemigo</span><span>■ Obstáculo</span><span>Verde: destino alcanzable</span></div>
+<div id="mapStatus" class="map-status">Prepará el mapa ubicando participantes.</div>
+</div>
+</section>
+
 <div class="turnbox"><div><div class="tag" id="roundLabel">RONDA 1</div><div class="activeName" id="activeName">—</div><div class="notice" id="turnHint">—</div></div><div class="actions"><button id="next" class="primary">Resolver turno / Siguiente →</button><button id="finish" class="danger">Finalizar combate</button></div></div>
 <hr style="border:0;border-top:1px solid var(--line);margin:15px 0">
 <div id="heroControls">
@@ -64,11 +82,48 @@ button{background:#33263a;border:1px solid #705875;color:var(--text);padding:10p
 </main>
 <script>
 (()=>{
-const $=id=>document.getElementById(id);let people=[],order=[],turn=0,round=1,started=false,finished=false,events=[],startedAt=null;
+const $=id=>document.getElementById(id);let people=[],order=[],turn=0,round=1,started=false,finished=false,events=[],startedAt=null,obstacles=new Set(),selectedCell=null;
 const uid=()=>Math.random().toString(36).slice(2,9);
-function add(role,name){people.push({id:uid(),name,role,hp:role==='hero'?17:role==='enemy'?8:12,max:role==='hero'?17:role==='enemy'?8:12,ac:role==='hero'?14:12,init:0,attack:role==='hero'?5:3,damage:role==='hero'?'1d6+3':'1d6+1',alive:true,conditions:[]});renderPeople()}
+function add(role,name){people.push({id:uid(),name,role,hp:role==='hero'?17:role==='enemy'?8:12,max:role==='hero'?17:role==='enemy'?8:12,ac:role==='hero'?14:12,init:0,attack:role==='hero'?5:3,damage:role==='hero'?'1d6+3':'1d6+1',alive:true,conditions:[],x:role==='enemy'?9:role==='hero'?2:3,y:role==='enemy'?2+people.filter(p=>p.role==='enemy').length:role==='hero'?5:6,dodging:false});renderPeople();renderMap()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function renderPeople(){const root=$('participants');if(!people.length){root.innerHTML='<p class="notice">Todavía no hay participantes.</p>';return}root.innerHTML=people.map(p=>`<div class="person"><div class="pname"><strong>${esc(p.name)}</strong><small>${p.role==='hero'?'Jugador':p.role==='ally'?'Aliado':'Enemigo'} · ${p.alive?'En combate':'Fuera de combate'}</small><div class="hpbar"><span style="width:${Math.max(0,p.hp/p.max*100)}%"></span></div></div><label class="field">PV<input data-id="${p.id}" data-k="hp" type="number" value="${p.hp}"></label><label class="field">CA<input data-id="${p.id}" data-k="ac" type="number" value="${p.ac}"></label><label class="field">Inic.<input data-id="${p.id}" data-k="init" type="number" value="${p.init}"></label><label class="field">Ataque<input data-id="${p.id}" data-k="attack" type="number" value="${p.attack}"></label><button class="remove" data-remove="${p.id}" ${started?'disabled':''}>✕</button></div>`).join('')}
+function renderPeople(){
+function renderMap(){
+ const actor=$('mapActor'),old=actor.value;
+ actor.innerHTML=people.map(p=>'<option value="'+p.id+'">'+esc(p.name)+'</option>').join('');
+ if(people.some(p=>p.id===old))actor.value=old;
+ const root=$('mapGrid');if(!root)return;
+ const mode=$('mapMode').value,chosen=people.find(p=>p.id===actor.value),hero=people.find(p=>p.role==='hero');
+ const cells=[];
+ for(let y=0;y<8;y++)for(let x=0;x<12;x++){
+  const occupant=people.find(p=>p.alive&&p.x===x&&p.y===y);
+  const blocked=obstacles.has(x+','+y),reachable=mode==='move'&&hero&&canReach(hero,x,y);
+  const symbol=blocked?'■':occupant?(occupant.role==='hero'?'●':occupant.role==='ally'?'◆':'▲'):'';
+  cells.push('<button class="cell '+(blocked?'blocked ':'')+(reachable?'reachable ':'')+(selectedCell===x+','+y?'selected':'')+'" data-cell="'+x+','+y+'" title="Columna '+(x+1)+', fila '+(y+1)+'">'+(symbol?'<span>'+symbol+'</span>':'')+'</button>');
+ }
+ root.innerHTML=cells.join('');
+ $('mapStatus').textContent=mode==='obstacle'?'Tocá casillas para colocar o quitar obstáculos.':mode==='place'?'Elegí un participante y tocá una casilla libre para ubicarlo.':('Movimiento de Cuervo: '+($('heroSpeed').value||25)+' pies. Elegí una casilla verde.');
+}
+function canReach(p,x,y){
+ if(obstacles.has(x+','+y)|| (people.some(q=>q.alive&&q.id!==p.id&&q.x===x&&q.y===y)))return false;
+ const steps=Math.max(Math.abs(x-p.x),Math.abs(y-p.y));
+ if(steps*5>Math.max(0,Number($('heroSpeed').value)||25))return false;
+ // BFS: diagonal steps cost 5 ft; no corner cutting through two blocked orthogonal cells.
+ const queue=[[p.x,p.y,0]],seen=new Set([p.x+','+p.y]);
+ while(queue.length){const [cx,cy,d]=queue.shift();if(cx===x&&cy===y)return true;
+  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){if(!dx&&!dy)continue;const nx=cx+dx,ny=cy+dy,key=nx+','+ny;
+   if(nx<0||nx>=12||ny<0||ny>=8||seen.has(key)||obstacles.has(key)||people.some(q=>q.alive&&q.id!==p.id&&q.x===nx&&q.y===ny))continue;
+   if(dx&&dy&&(obstacles.has((cx+dx)+','+cy)||obstacles.has(cx+','+(cy+dy))))continue;
+   seen.add(key);queue.push([nx,ny,d+1]);
+  }
+ }
+ return false;
+}
+function hasLineOfSight(a,b){
+ let x0=a.x,y0=a.y,x1=b.x,y1=b.y,dx=Math.abs(x1-x0),dy=Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1,err=dx-dy;
+ while(!(x0===x1&&y0===y1)){const e2=2*err;if(e2>-dy){err-=dy;x0+=sx}if(e2<dx){err+=dx;y0+=sy}if(!(x0===x1&&y0===y1)&&obstacles.has(x0+','+y0))return false}
+ return true;
+}
+const root=$('participants');if(!people.length){root.innerHTML='<p class="notice">Todavía no hay participantes.</p>';return}root.innerHTML=people.map(p=>`<div class="person"><div class="pname"><strong>${esc(p.name)}</strong><small>${p.role==='hero'?'Jugador':p.role==='ally'?'Aliado':'Enemigo'} · ${p.alive?'En combate':'Fuera de combate'}</small><div class="hpbar"><span style="width:${Math.max(0,p.hp/p.max*100)}%"></span></div></div><label class="field">PV<input data-id="${p.id}" data-k="hp" type="number" value="${p.hp}"></label><label class="field">CA<input data-id="${p.id}" data-k="ac" type="number" value="${p.ac}"></label><label class="field">Inic.<input data-id="${p.id}" data-k="init" type="number" value="${p.init}"></label><label class="field">Ataque<input data-id="${p.id}" data-k="attack" type="number" value="${p.attack}"></label><button class="remove" data-remove="${p.id}" ${started?'disabled':''}>✕</button></div>`).join('')}
 $('participants').addEventListener('change',e=>{const el=e.target;if(!el.dataset.id)return;const p=people.find(x=>x.id===el.dataset.id);if(!p)return;p[el.dataset.k]=Number(el.value);if(el.dataset.k==='hp'){p.alive=p.hp>0; p.hp=Math.min(p.max,Math.max(0,p.hp))}renderPeople();refreshTargets()});
 $('participants').addEventListener('click',e=>{if(e.target.dataset.remove&&!started){people=people.filter(p=>p.id!==e.target.dataset.remove);renderPeople()}});
 $('addHero').onclick=()=>add('hero',$('heroName').value.trim()||'Personaje jugador');$('addAlly').onclick=()=>add('ally','Aliado '+(people.filter(p=>p.role==='ally').length+1));$('addEnemy').onclick=()=>add('enemy','Enemigo '+(people.filter(p=>p.role==='enemy').length+1));
@@ -77,21 +132,38 @@ function roll(sides){return Math.floor(Math.random()*sides)+1}
 function damageRoll(expr){const m=String(expr).trim().match(/^(\d+)d(\d+)([+-]\d+)?$/i);if(!m)return null;let n=Number(m[1]),s=Number(m[2]),mod=Number(m[3]||0);if(n<1||n>20||s<2||s>100)return null;let vals=Array.from({length:n},()=>roll(s));return {total:Math.max(0,vals.reduce((a,b)=>a+b,0)+mod),detail:vals.join('+')+(mod?((mod>0?'+':'')+mod):'')}}
 function living(role){return people.filter(p=>p.alive&&(!role||p.role===role))}
 function refreshTargets(){let opts=living('enemy');$('target').innerHTML=opts.map(p=>`<option value="${p.id}">${esc(p.name)} (CA ${p.ac})</option>`).join('')||'<option value="">Sin enemigos</option>'}
-function start(){if(!people.some(p=>p.role==='hero')||!people.some(p=>p.role==='enemy')){alert('Agregá al menos un personaje jugador y un enemigo.');return}people.forEach(p=>{p.init=roll(20)+(p.init||0)});order=people.filter(p=>p.alive).sort((a,b)=>b.init-a.init);turn=0;round=1;started=true;finished=false;startedAt=new Date();$('battle').classList.remove('hidden');$('setup').classList.add('hidden');log('Comienza "'+$('encName').value+'". Iniciativa: '+order.map(p=>p.name+' '+p.init).join(', ')+'.');refreshTargets();showTurn()}
-function showTurn(){while(turn<order.length&&!order[turn].alive)turn++;if(turn>=order.length){turn=0;round++;order=people.filter(p=>p.alive).sort((a,b)=>b.init-a.init);log('Comienza la ronda '+round+'.')}let p=order[turn];if(!p){finish('Combate interrumpido');return}$('roundLabel').textContent='RONDA '+round;$('activeName').textContent=p.name;$('turnHint').textContent=(p.role==='hero'?'Tu turno: elegí una acción.':p.role==='ally'?'Aliado: turno automático.':'Enemigo: turno automático.')+' · Iniciativa '+p.init;$('heroControls').classList.toggle('hidden',p.role!=='hero');$('next').classList.toggle('hidden',p.role==='hero');$('doHero').disabled=!living('enemy').length;refreshTargets()}
-function resolveAttack(attacker,target,bonus,damage){const d=roll(20),total=d+bonus;if(d===20||total>=target.ac){const dmg=damageRoll(damage);if(!dmg){log(attacker.name+' intenta atacar, pero el daño "'+damage+'" no tiene formato válido.');return}const critical=d===20?damageRoll(damage):null;const amount=critical?dmg.total+critical.total:dmg.total;target.hp=Math.max(0,target.hp-amount);target.alive=target.hp>0;log(attacker.name+' ataca a '+target.name+': d20 '+d+' + '+bonus+' = '+total+' contra CA '+target.ac+'. Impacta; daño '+amount+(critical?' (crítico)':'')+'. '+target.name+' queda en '+target.hp+'/'+target.max+' PV.')}else log(attacker.name+' ataca a '+target.name+': d20 '+d+' + '+bonus+' = '+total+' contra CA '+target.ac+'. Falla.');renderPeople();refreshTargets()}
+function start(){
+if(!people.some(p=>p.role==='hero')||!people.some(p=>p.role==='enemy')){alert('Agregá al menos un personaje jugador y un enemigo.');return}people.forEach(p=>{p.init=roll(20)+(p.init||0)});order=people.filter(p=>p.alive).sort((a,b)=>b.init-a.init);turn=0;round=1;started=true;finished=false;startedAt=new Date();$('mapMode').value='move';$('battle').classList.remove('hidden');$('setup').classList.add('hidden');log('Comienza "'+$('encName').value+'". Iniciativa: '+order.map(p=>p.name+' '+p.init).join(', ')+'.');refreshTargets();showTurn()}
+function showTurn(){while(turn<order.length&&!order[turn].alive)turn++;if(turn>=order.length){turn=0;round++;order=people.filter(p=>p.alive).sort((a,b)=>b.init-a.init);log('Comienza la ronda '+round+'.')}let p=order[turn];if(p)p.dodging=false;if(!p){finish('Combate interrumpido');return}$('roundLabel').textContent='RONDA '+round;$('activeName').textContent=p.name;$('turnHint').textContent=(p.role==='hero'?'Tu turno: elegí una acción.':p.role==='ally'?'Aliado: turno automático.':'Enemigo: turno automático.')+' · Iniciativa '+p.init;$('heroControls').classList.toggle('hidden',p.role!=='hero');$('next').classList.toggle('hidden',p.role==='hero');$('doHero').disabled=!living('enemy').length;refreshTargets();renderMap()}
+function resolveAttack(attacker,target,bonus,damage){const first=roll(20),second=target.dodging?roll(20):null,d=second===null?first:Math.min(first,second),total=d+bonus;if(d===20||total>=target.ac){const dmg=damageRoll(damage);if(!dmg){log(attacker.name+' intenta atacar, pero el daño "'+damage+'" no tiene formato válido.');return}const critical=d===20?damageRoll(damage):null;const amount=critical?dmg.total+critical.total:dmg.total;target.hp=Math.max(0,target.hp-amount);target.alive=target.hp>0;log(attacker.name+' ataca a '+target.name+': d20 '+d+' + '+bonus+' = '+total+' contra CA '+target.ac+'. Impacta; daño '+amount+(critical?' (crítico)':'')+'. '+target.name+' queda en '+target.hp+'/'+target.max+' PV.')}else log(attacker.name+' ataca a '+target.name+': d20 '+d+' + '+bonus+' = '+total+' contra CA '+target.ac+'. Falla.');if(second!==null)log(target.name+' esquiva: se aplicó desventaja al ataque ('+first+' y '+second+').');renderPeople();refreshTargets();renderMap()}
 function autoTurn(p){let foes=p.role==='enemy'?living().filter(x=>x.role!=='enemy'):living('enemy');if(!foes.length){finish('Victoria');return}let target=foes.sort((a,b)=>(a.hp/a.max)-(b.hp/b.max))[0];resolveAttack(p,target,p.attack,p.damage);if(!living('enemy').length){finish('Victoria');return}if(!living('hero').length){finish('Derrota');return}}
 $('start').onclick=start;
-$('doHero').onclick=()=>{let p=order[turn];if(!p||p.role!=='hero')return;let action=$('heroAction').value,target=people.find(x=>x.id===$('target').value),note=$('heroNote').value.trim();if(action==='attack'){if(!target||!target.alive){alert('Elegí un enemigo disponible.');return}resolveAttack(p,target,Number($('heroBonus').value)||0,$('heroDamage').value)}else{log(p.name+' realiza: '+({hide:'Esconderse',defend:'Defenderse',move:'Moverse / reposicionarse',item:'Usar objeto',other:'Otra acción'}[action]||action)+'. '+(note?'Detalle: '+note:'')+' (resolución especial manual).')}if(note&&action==='attack')log('Detalle declarado por el jugador: '+note);$('heroNote').value='';if(!living('enemy').length){finish('Victoria');return}if(!living('hero').length){finish('Derrota');return}advance()};
+$('mapMode').onchange=renderMap;$('mapActor').onchange=renderMap;$('heroSpeed').onchange=renderMap;
+$('mapGrid').addEventListener('click',e=>{
+ const cell=e.target.closest('[data-cell]');if(!cell)return;const [x,y]=cell.dataset.cell.split(',').map(Number),key=x+','+y,mode=$('mapMode').value;
+ if(mode==='obstacle'){if(obstacles.has(key))obstacles.delete(key);else if(!people.some(p=>p.alive&&p.x===x&&p.y===y))obstacles.add(key);renderMap();return}
+ if(mode==='place'){if(started){$('mapStatus').textContent='La ubicación inicial se bloquea al comenzar el encuentro.';return}
+  const p=people.find(q=>q.id===$('mapActor').value);if(!p)return;
+  if(obstacles.has(key)||people.some(q=>q.alive&&q.id!==p.id&&q.x===x&&q.y===y)){ $('mapStatus').textContent='Esa casilla está ocupada o bloqueada.';return}
+  p.x=x;p.y=y;renderPeople();renderMap();$('mapStatus').textContent=p.name+' ubicado en ('+(x+1)+','+(y+1)+').';return
+ }
+ if(mode==='move'&&started){const hero=people.find(p=>p.role==='hero'&&p.alive);if(!hero)return;
+  if(!canReach(hero,x,y)){ $('mapStatus').textContent='Destino no válido: fuera del movimiento disponible, ocupado o bloqueado.';return}
+  const from='('+(hero.x+1)+','+(hero.y+1)+')';hero.x=x;hero.y=y;selectedCell=key;log('Cuervo se mueve de '+from+' a ('+(x+1)+','+(y+1)+') usando '+(Math.max(Math.abs(x-(Number(from.match(/\d+/)[0])-1)),Math.abs(y-(Number(from.match(/,\s*(\d+)/)[1])-1)))*5)+' pies.');renderPeople();renderMap();
+ }
+});
+$('clearObstacles').onclick=()=>{obstacles.clear();renderMap()};
+
+$('doHero').onclick=()=>{let p=order[turn];if(!p||p.role!=='hero')return;let action=$('heroAction').value,target=people.find(x=>x.id===$('target').value),note=$('heroNote').value.trim();if(action==='attack'){if(!target||!target.alive){alert('Elegí un enemigo disponible.');return}resolveAttack(p,target,Number($('heroBonus').value)||0,$('heroDamage').value)}else if(action==='defend'){p.dodging=true;log(p.name+' adopta la acción Esquivar: los ataques contra él tendrán desventaja hasta el comienzo de su próximo turno y obtiene ventaja en salvaciones de Destreza (estas últimas se registran para adjudicación manual).')}else if(action==='move'){ $('mapMode').value='move';renderMap();log(p.name+' elige movimiento; seleccioná un destino en el mapa para resolverlo. El turno queda pendiente hasta elegir una casilla.');return }else{log(p.name+' realiza: '+({hide:'Esconderse',item:'Usar objeto',other:'Otra acción'}[action]||action)+'. '+(note?'Detalle: '+note:'')+' (resolución especial manual).')}if(note&&action==='attack')log('Detalle declarado por el jugador: '+note);$('heroNote').value='';if(!living('enemy').length){finish('Victoria');return}if(!living('hero').length){finish('Derrota');return}advance()};
 function advance(){turn++;if(turn>=order.length){turn=0;round++;log('Comienza la ronda '+round+'.')}while(turn<order.length&&!order[turn].alive)turn++;if(turn>=order.length){turn=0;round++;order=people.filter(p=>p.alive).sort((a,b)=>b.init-a.init);log('Comienza la ronda '+round+'.')}let p=order[turn];if(p&&p.role!=='hero'){autoTurn(p);if(finished)return;advance();return}showTurn()}
 $('next').onclick=()=>{let p=order[turn];if(p&&p.role!=='hero'){autoTurn(p);if(!finished)advance()}};
 function finish(result){if(finished)return;finished=true;started=false;$('battle').classList.add('hidden');$('closed').classList.remove('hidden');$('resultLine').textContent='Resultado: '+result+' · '+round+' ronda(s).';$('exportText').value=makeExport(result);log('Encuentro finalizado: '+result+'.');}
 $('finish').onclick=()=>{if(confirm('¿Finalizar el combate y generar el resumen?'))finish('Combate finalizado manualmente')};
-function makeExport(result){let lines=['CUERVO ENCOUNTER ENGINE | RESUMEN DE COMBATE','Encuentro: '+$('encName').value,'Resultado: '+result,'Rondas: '+round,'Inicio: '+(startedAt?startedAt.toLocaleString():'No registrado'),'','PARTICIPANTES'];people.forEach(p=>lines.push('- '+p.name+' ['+(p.role==='hero'?'Jugador':p.role==='ally'?'Aliado':'Enemigo')+']: '+p.hp+'/'+p.max+' PV, CA '+p.ac+', iniciativa '+p.init+', estado '+(p.alive?'en pie':'fuera de combate')+(p.conditions.length?', condiciones: '+p.conditions.join(', '):'')));lines.push('','REGISTRO DETALLADO');events.forEach(e=>lines.push('[Ronda '+e.round+'] '+e.msg));lines.push('','Nota: los turnos automáticos usan resolución básica de ataque; las acciones especiales pueden requerir adjudicación manual.');return lines.join('\n')}
+function makeExport(result){let lines=['CUERVO ENCOUNTER ENGINE | RESUMEN DE COMBATE','Encuentro: '+$('encName').value,'Resultado: '+result,'Rondas: '+round,'Inicio: '+(startedAt?startedAt.toLocaleString():'No registrado'),'','PARTICIPANTES'];people.forEach(p=>lines.push('- '+p.name+' ['+(p.role==='hero'?'Jugador':p.role==='ally'?'Aliado':'Enemigo')+']: '+p.hp+'/'+p.max+' PV, CA '+p.ac+', iniciativa '+p.init+', posición ('+(p.x+1)+','+(p.y+1)+'), estado '+(p.alive?'en pie':'fuera de combate')+(p.dodging?', Esquivar activo':'')+(p.conditions.length?', condiciones: '+p.conditions.join(', '):'')));lines.push('','MAPA TÁCTICO (casillas de 5 pies)');lines.push('Obstáculos: '+(Array.from(obstacles).join('; ')||'ninguno'));lines.push('','REGISTRO DETALLADO');events.forEach(e=>lines.push('[Ronda '+e.round+'] '+e.msg));lines.push('','Nota: los turnos automáticos usan resolución básica de ataque; las acciones especiales pueden requerir adjudicación manual.');return lines.join('\n')}
 $('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('exportText').value);$('copy').textContent='¡Copiado!';setTimeout(()=>$('copy').textContent='Copiar resumen para Nox',1800)}catch(e){$('exportText').select();document.execCommand('copy');$('copy').textContent='¡Copiado!'}};
 $('download').onclick=()=>{const blob=new Blob([$('exportText').value],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='cuervo-encuentro-resumen.txt';a.click();URL.revokeObjectURL(url)};
 $('new').onclick=()=>location.reload();
-add('hero','Cuervo');add('ally','Aliado 1');add('enemy','Enemigo 1');add('enemy','Enemigo 2');
+add('hero','Cuervo');add('ally','Aliado 1');add('enemy','Enemigo 1');add('enemy','Enemigo 2');renderMap();
 })();
 </script>
 </body></html>
