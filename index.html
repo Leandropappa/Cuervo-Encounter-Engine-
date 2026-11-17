@@ -85,7 +85,7 @@ button{background:#33263a;border:1px solid #705875;color:var(--text);padding:10p
 (()=>{
 const $=id=>document.getElementById(id);let people=[],order=[],turn=0,round=1,started=false,finished=false,events=[],startedAt=null,obstacles=new Set(),selectedCell=null;
 const uid=()=>Math.random().toString(36).slice(2,9);
-function add(role,name){people.push({id:uid(),name,role,hp:role==='hero'?17:role==='enemy'?8:12,max:role==='hero'?17:role==='enemy'?8:12,ac:role==='hero'?14:12,init:0,attack:role==='hero'?5:3,damage:role==='hero'?'1d6+3':'1d6+1',alive:true,conditions:[],x:role==='enemy'?9:role==='hero'?2:3,y:role==='enemy'?2+people.filter(p=>p.role==='enemy').length:role==='hero'?5:6,dodging:false});renderPeople();renderMap()}
+function add(role,name){people.push({id:uid(),name,role,hp:role==='hero'?17:role==='enemy'?8:12,max:role==='hero'?17:role==='enemy'?8:12,ac:role==='hero'?14:12,init:0,attack:role==='hero'?5:3,damage:role==='hero'?'1d6+3':'1d6+1',alive:true,conditions:[],x:role==='enemy'?9:role==='hero'?2:3,y:role==='enemy'?1+people.filter(p=>p.role==='enemy').length:role==='hero'?5:5+people.filter(p=>p.role==='ally').length,dodging:false});renderPeople();renderMap()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function renderPeople(){
 function renderMap(){
@@ -110,7 +110,7 @@ function canReach(p,x,y){
  if(steps*5>Math.max(0,Number($('heroSpeed').value)||25))return false;
  // BFS: diagonal steps cost 5 ft; no corner cutting through two blocked orthogonal cells.
  const queue=[[p.x,p.y,0]],seen=new Set([p.x+','+p.y]);
- while(queue.length){const [cx,cy,d]=queue.shift();if(cx===x&&cy===y)return true;
+ while(queue.length){const [cx,cy,d]=queue.shift();if(d*5>Math.max(0,Number($('heroSpeed').value)||25))continue;if(cx===x&&cy===y)return true;
   for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){if(!dx&&!dy)continue;const nx=cx+dx,ny=cy+dy,key=nx+','+ny;
    if(nx<0||nx>=12||ny<0||ny>=8||seen.has(key)||obstacles.has(key)||people.some(q=>q.alive&&q.id!==p.id&&q.x===nx&&q.y===ny))continue;
    if(dx&&dy&&(obstacles.has((cx+dx)+','+cy)||obstacles.has(cx+','+(cy+dy))))continue;
@@ -148,7 +148,7 @@ $('mapGrid').addEventListener('click',e=>{
   if(obstacles.has(key)||people.some(q=>q.alive&&q.id!==p.id&&q.x===x&&q.y===y)){ $('mapStatus').textContent='Esa casilla está ocupada o bloqueada.';return}
   p.x=x;p.y=y;renderPeople();renderMap();$('mapStatus').textContent=p.name+' ubicado en ('+(x+1)+','+(y+1)+').';return
  }
- if(mode==='move'&&started){const hero=people.find(p=>p.role==='hero'&&p.alive);if(!hero)return;
+ if(mode==='move'&&started){if(!order[turn]||order[turn].role!=='hero'){ $('mapStatus').textContent='Cuervo solo puede moverse durante su propio turno.';return}const hero=people.find(p=>p.role==='hero'&&p.alive);if(!hero)return;
   if(!canReach(hero,x,y)){ $('mapStatus').textContent='Destino no válido: fuera del movimiento disponible, ocupado o bloqueado.';return}
   const steps=Math.max(Math.abs(x-hero.x),Math.abs(y-hero.y)),from='('+(hero.x+1)+','+(hero.y+1)+')';hero.x=x;hero.y=y;selectedCell=key;log('Cuervo se mueve de '+from+' a ('+(x+1)+','+(y+1)+') usando '+(steps*5)+' pies.');renderPeople();renderMap();if(started&&order[turn]&&order[turn].role==='hero'){if(!living('enemy').length){finish('Victoria');return}advance()}
  }
