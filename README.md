@@ -2,13 +2,14 @@
 
 Motor táctico de combate para **Las Cenizas de la Marea**. Su objetivo es resolver y registrar encuentros de forma consistente, sin quitarle al jugador el control de Cuervo.
 
-## Diseño aprobado para la reconstrucción
+## Documentación de diseño
 
-La especificación funcional es el documento rector para el rediseño:
+- [Especificación funcional](docs/ESPECIFICACION_FUNCIONAL.md): alcance, principios, reglas, roles, arquitectura, pruebas y etapas.
+- [Modelo de datos y formato de importación](docs/MODELO_DATOS_Y_FORMATO_ENCUENTRO.md): perfiles, instancias, capacidades, estado de combate, mapa y flujo de validación.
+- [JSON Schema 1.0.0](schemas/encounter.schema.json): contrato estructural para validar archivos de encuentro.
+- [Ejemplo de encuentro JSON](examples/encuentro-ejemplo.json): archivo didáctico con estadísticas ficticias, no pertenecientes a la campaña.
 
-- [Leer la especificación funcional](docs/ESPECIFICACION_FUNCIONAL.md)
-
-### Principios centrales
+## Principios centrales
 
 - Base: **D&D 5.ª edición, compatible con el marco básico de 2014**, adaptado a las reglas simplificadas y las fichas oficiales de la campaña.
 - Cuervo queda bajo control exclusivo del jugador.
