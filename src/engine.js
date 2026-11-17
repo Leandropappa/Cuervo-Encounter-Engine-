@@ -114,10 +114,19 @@ export function createCombat(encounter, random=rollDie) {
     if(!weapon) throw new Error("Ataque no encontrado en la ficha.");
     if(weapon.implementation==="manual") throw new Error("Este ataque está marcado para resolución manual.");
     if(t.state.hitPoints<=0) throw new Error("El objetivo ya no tiene PG.");
+    let effectiveAdvantage=advantage, measuredRange=null;
+    if(encounter.map && a.state.position && t.state.position && Number.isFinite(weapon.range?.normalFeet)){
+      measuredRange=distanceFeet(a.state.position,t.state.position,encounter.map.cellSizeFeet,encounter.map.diagonalRule);
+      const ranged=weapon.attackType==="ranged_weapon"||weapon.attackType==="ranged_spell";
+      const maximum=ranged?(weapon.range.longFeet??weapon.range.normalFeet):weapon.range.normalFeet;
+      if(measuredRange>maximum) throw new Error("Objetivo fuera del alcance del ataque.");
+      if(ranged&&measuredRange>weapon.range.normalFeet) effectiveAdvantage-=1;
+    }
+    effectiveAdvantage=Math.max(-1,Math.min(1,effectiveAdvantage));
     if(consumeAction){if(a!==current())throw new Error("Solo puede actuar el participante cuyo turno está activo.");spend(a,"action");}
-    const d1=random(20),d2=advantage===0?null:random(20),natural=d2===null?d1:(advantage>0?Math.max(d1,d2):Math.min(d1,d2));
+    const d1=random(20),d2=effectiveAdvantage===0?null:random(20),natural=d2===null?d1:(effectiveAdvantage>0?Math.max(d1,d2):Math.min(d1,d2));
     const total=natural+weapon.attackBonus, hit=natural===20 || (natural!==1 && total>=t.profile.armorClass);
-    log("attack_roll",actorId,{targetId,attackId,weapon:weapon.name,d20:d1,secondD20:d2,advantage,natural,bonus:weapon.attackBonus,total,targetAC:t.profile.armorClass,hit,critical:natural===20});
+    log("attack_roll",actorId,{targetId,attackId,weapon:weapon.name,d20:d1,secondD20:d2,advantage:effectiveAdvantage,rangeFeet:measuredRange,natural,bonus:weapon.attackBonus,total,targetAC:t.profile.armorClass,hit,critical:natural===20});
     let damage=null;
     if(hit){
       damage=rollExpression(weapon.damage);
