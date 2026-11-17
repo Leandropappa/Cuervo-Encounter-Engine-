@@ -695,7 +695,19 @@
             }
           }
         }
-      }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "profile"
+          ]
+        },
+        {
+          "required": [
+            "profileRef"
+          ]
+        }
+      ]
     },
     "map": {
       "type": "object",
