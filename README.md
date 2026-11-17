@@ -20,6 +20,21 @@ Motor táctico de combate para **Las Cenizas de la Marea**. Su objetivo es resol
 - El resumen final debe poder pegarse en el chat de campaña y también exportarse como JSON estructurado.
 - Toda regla no implementada se identifica como pendiente o manual.
 
+## Aplicación en desarrollo
+
+- [Abrir aplicación (GitHub Pages)](https://leandropappa.github.io/Cuervo-Encounter-Engine-/)
+- Importación de encuentros JSON y validación semántica básica.
+- Iniciativa, orden de turnos y economía básica de acción.
+- Ataques con d20, críticos naturales, expresiones de daño y actualización de PG.
+- Alcance de armas medido en el mapa para ataques con posiciones conocidas.
+- Movimiento por casillas, visualización del mapa y obstáculos de destino.
+- Turnos automáticos básicos para aliados/enemigos con ataque documentado.
+- Registro estructurado y exportación TXT/JSON, incluido el evento de cierre.
+- Azar criptográfico mediante Web Crypto y muestreo sin sesgo.
+- Pruebas automatizadas con Node.js; se ejecutan en cada push.
+
+**Estado:** primera versión funcional de base, todavía no es un motor completo de D&D 5e. Cobertura, línea de visión, rutas alrededor de obstáculos, condiciones con efectos, reacciones, salvaciones, concentración, rasgos especiales y desempates de iniciativa siguen pendientes o requieren resolución manual. No usar como autoridad para una regla que aún no esté implementada.
+
 ## Reconstrucción desde cero
 
 El prototipo actual se conserva en el historial de GitHub como referencia y respaldo. **No es la base que se seguirá ampliando.** La nueva implementación se desarrollará por módulos, con pruebas independientes del navegador y criterios de aceptación definidos en la especificación.
