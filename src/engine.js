@@ -43,7 +43,7 @@ export function rollDie(sides) {
   return secureInt(sides)+1;
 }
 export function rollExpression(expression) {
-  if (typeof expression!=="string" || !/^[0-9dD+\\- ]{1,40}$/.test(expression)) throw new Error("Expresión de daño no válida.");
+  if (typeof expression!=="string" || !/^[0-9dD+\- ]{1,40}$/.test(expression)) throw new Error("Expresión de daño no válida.");
   const normalized=expression.replace(/\s/g,"").toLowerCase();
   const tokens=normalized.match(/[+-]?[^+-]+/g);
   if (!tokens) throw new Error("Expresión vacía.");
